@@ -1,0 +1,14 @@
+{
+  "name": "sepa-payment-qr",
+  "version": "1.0.0",
+  "private": true,
+  "description": "EPC069-12 scan-to-pay QR generator (static app) + tests",
+  "scripts": {
+    "test": "node --test test/*.test.mjs && python3 test/integration.py",
+    "test:unit": "node --test test/*.test.mjs",
+    "test:e2e": "python3 test/integration.py"
+  },
+  "devDependencies": {
+    "jsqr": "^1.4.0"
+  }
+}

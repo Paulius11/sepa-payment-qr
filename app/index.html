@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SEPA Payment QR — scan to pay</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main>
+    <header>
+      <h1>SEPA Payment QR</h1>
+      <p class="sub">
+        Fill the transfer once, get a QR your bank app scans to auto-fill the
+        payment. Works with <strong>Revolut, SEB, Swedbank, N26, Wise</strong>
+        and any bank that reads the European <abbr title="European Payments Council">EPC</abbr>
+        QR standard (EPC069-12 / “GiroCode”). Euro transfers only.
+      </p>
+    </header>
+
+    <section class="grid">
+      <form id="form" autocomplete="off" novalidate>
+        <div class="mode" id="mode" role="tablist">
+          <button type="button" class="mode-btn" data-mode="payment">Payment (SEPA)</button>
+          <button type="button" class="mode-btn" data-mode="link">Link / text</button>
+        </div>
+
+        <div id="link-input" hidden>
+          <label>
+            Link or text
+            <input id="linktext" placeholder="revolut.me/blakedesigner — any URL or text" spellcheck="false" />
+            <small class="err" data-for="linktext"></small>
+          </label>
+        </div>
+
+        <div id="payment-fields">
+        <div class="bill" id="billbox">
+          <input type="file" id="bill-file" accept=".txt,application/pdf,image/*" hidden />
+          <textarea id="bill-text" rows="3"
+            placeholder="Paste bill text here (IBAN, amount, reference) — or drop a PDF/photo. We prefill the payment."></textarea>
+          <p class="bill-status" id="bill-status"></p>
+          <label class="bill-iban-row" id="bill-iban-row" hidden>
+            This bill lists several accounts — pick your bank:
+            <select id="bill-iban"></select>
+          </label>
+        </div>
+        <div class="saved" id="saved">
+          <select id="saved-select"><option value="">Load saved payee…</option></select>
+          <button type="button" id="saved-save">Save</button>
+          <button type="button" id="saved-del" title="Delete saved payee" hidden>✕</button>
+        </div>
+        <button id="demo" type="button" class="demo">Fill demo data</button>
+        <label>
+          Beneficiary name <span class="req">*</span>
+          <input id="name" maxlength="70" placeholder="Jonas Jonaitis" />
+          <small class="err" data-for="name"></small>
+        </label>
+
+        <label>
+          IBAN <span class="req">*</span>
+          <input id="iban" placeholder="LT12 3456 7890 1234 5678"
+                 spellcheck="false" autocapitalize="characters" />
+          <small class="err" data-for="iban"></small>
+        </label>
+
+        <label>
+          Amount (EUR) <span class="opt">optional</span>
+          <input id="amount" inputmode="decimal" placeholder="12.50" />
+          <small class="err" data-for="amount"></small>
+        </label>
+
+        <label>
+          Reference / message <span class="opt">optional</span>
+          <input id="message" maxlength="140" placeholder="Invoice 2026-014" />
+          <small class="err" data-for="message"></small>
+        </label>
+
+        <details>
+          <summary>Advanced</summary>
+          <label>
+            BIC / SWIFT <span class="opt">optional</span>
+            <input id="bic" maxlength="11" placeholder="CBVILT2X"
+                   spellcheck="false" autocapitalize="characters" />
+            <small class="err" data-for="bic"></small>
+          </label>
+          <label>
+            Purpose code <span class="opt">optional, 4 chars</span>
+            <input id="purpose" maxlength="4" placeholder="GDDS"
+                   spellcheck="false" autocapitalize="characters" />
+          </label>
+        </details>
+        </div><!-- /payment-fields -->
+      </form>
+
+      <div class="out">
+        <div id="qrbox" class="qrbox">
+          <p class="placeholder">Fill name + IBAN to generate a code.</p>
+          <canvas id="qr" hidden></canvas>
+        </div>
+        <div class="actions">
+          <button id="download" type="button" disabled>Download PNG</button>
+          <button id="link" type="button" disabled>Copy link</button>
+          <button id="copy" type="button" disabled>Copy raw text</button>
+        </div>
+        <details class="style" id="stylebox">
+          <summary>Style</summary>
+          <label>
+            Preset
+            <select id="s-preset">
+              <option value="classic">Classic (most readable)</option>
+              <option value="beautiful">Beautiful</option>
+              <option value="mono">Mono</option>
+              <option value="dots">Dots</option>
+              <option value="vivid">Vivid</option>
+              <option value="custom">Custom</option>
+            </select>
+          </label>
+          <div class="style-grid">
+            <label>
+              Modules
+              <select id="s-shape">
+                <option value="rounded">Rounded</option>
+                <option value="dot">Dots</option>
+                <option value="square">Square</option>
+              </select>
+            </label>
+            <label>
+              Outer eye
+              <select id="s-outer">
+                <option value="rounded">Rounded</option>
+                <option value="leaf">Leaf</option>
+                <option value="circle">Circle</option>
+                <option value="square">Square</option>
+              </select>
+            </label>
+            <label>
+              Inner eye
+              <select id="s-inner">
+                <option value="rounded">Rounded</option>
+                <option value="circle">Circle</option>
+                <option value="square">Square</option>
+              </select>
+            </label>
+            <label>
+              Gradient type
+              <select id="s-gradtype">
+                <option value="linear">Linear</option>
+                <option value="radial">Radial</option>
+              </select>
+            </label>
+            <label class="chk"><input type="checkbox" id="s-gradient" /> Gradient</label>
+            <label class="col">Color <input type="color" id="s-color1" /></label>
+            <label class="col">Color 2 <input type="color" id="s-color2" /></label>
+            <label class="col">Eyes <input type="color" id="s-eyecolor" /></label>
+          </div>
+          <label class="logo-row">
+            Center logo
+            <span class="logo-controls">
+              <input type="file" id="s-logo" accept="image/*" />
+              <button type="button" id="s-logo-clear" hidden>Clear</button>
+            </span>
+          </label>
+          <p class="style-note">Every style is decode-checked to stay scannable
+            (a logo raises error correction automatically). “Classic” is the
+            safest if a scan ever fails.</p>
+        </details>
+        <details class="raw">
+          <summary>Raw EPC payload</summary>
+          <pre id="payload"></pre>
+          <p class="bytes" id="bytes"></p>
+        </details>
+        <p class="how">
+          <strong>Revolut:</strong> tap the QR / camera icon on the Payments
+          screen and point it at this code. <strong>Most bank apps:</strong> use
+          “Scan QR to pay”. Amount and message auto-fill; you confirm and send.
+        </p>
+      </div>
+    </section>
+
+    <footer>
+      Runs fully offline. Nothing you type leaves the page. Not affiliated with
+      any bank. Verify every payment before you confirm it.
+    </footer>
+  </main>
+
+  <script src="lib/qrcode.js"></script>
+  <script src="lib/pdf.min.js"></script>
+  <script src="epc.js"></script>
+  <script src="bill.js"></script>
+  <script src="app.js"></script>
+  <script src="webmcp.js"></script>
+</body>
+</html>
